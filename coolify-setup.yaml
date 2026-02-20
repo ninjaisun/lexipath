@@ -1,0 +1,59 @@
+# Coolify v4 Docker Compose Setup
+# 建议在 NAS 上创建一个目录，例如 /docker/coolify，并将此文件保存为 docker-compose.yml
+# 参考自 Coolify 官方安装脚本
+
+services:
+  coolify:
+    image: "ghcr.io/coollabsio/coolify:latest"
+    container_name: coolify
+    restart: always
+    environment:
+      - APP_ID=
+      - APP_KEY=base64:uP8R9Z0X1Y2Z3A4B5C6D7E8F9G0H1I2J3K4L5M6N7O8= # 这是一个精确 32 字节的 Base64 密钥
+      - DB_DATABASE=coolify
+      - DB_USERNAME=coolify
+      - DB_PASSWORD=password
+      - DB_HOST=coolify-db
+      - DB_PORT=5432
+      - REDIS_PASSWORD=password
+      - REDIS_USERNAME=default
+      - REDIS_HOST=coolify-redis
+      - INSTANCE_ID=
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data:/data
+    ports:
+      - "8000:8000" # Dashboard
+      - "6001:6001" # Real-time communications
+      - "8766:8765" # Terminal over HTTP (从 8765 改为 8766 以避开 NAS 冲突)
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  coolify-db:
+    image: postgres:15-alpine
+    container_name: coolify-db
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=coolify
+      - POSTGRES_DB=coolify
+    volumes:
+      - ./db:/var/lib/postgresql/data
+
+  coolify-redis:
+    image: redis:alpine
+    container_name: coolify-redis
+    restart: always
+    command: redis-server --requirepass password
+    volumes:
+      - ./redis:/data
+
+  coolify-helper:
+    image: "ghcr.io/coollabsio/coolify-helper:latest"
+    container_name: coolify-helper
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

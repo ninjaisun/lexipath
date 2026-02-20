@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* 2026 Palette: Digital Calm & Tactile Foundation */
+    --background: 45 30% 96%;
+    /* Cloud Dancer (Soft Airy Off-white) */
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Transformative Teal (Primary) */
+    --primary: 174 60% 32%;
+    --primary-foreground: 180 20% 98%;
+
+    /* Digital Lavender (Secondary/Accent) */
+    --secondary: 260 40% 92%;
+    --secondary-foreground: 260 60% 20%;
+
+    --muted: 210 20% 94%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Electric Neon Cyan (Accent) */
+    --accent: 185 100% 45%;
+    --accent-foreground: 185 10% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 174 20% 88%;
+    --input: 174 20% 88%;
+    --ring: 174 60% 45%;
+
+    --radius: 1.5rem;
+    /* More organic, "squishy" corners */
+
+    /* 2026 Tactile Variables */
+    --glass-blur: 16px;
+    --squishy-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.1);
+  }
+
+  .dark {
+    --background: 220 20% 6%;
+    /* Deep Charcoal */
+    --foreground: 180 20% 98%;
+
+    --card: 220 20% 8%;
+    --card-foreground: 180 20% 98%;
+
+    --primary: 174 75% 45%;
+    /* Brighter Teal for Dark Mode */
+    --primary-foreground: 220 20% 6%;
+
+    --secondary: 260 30% 20%;
+    --secondary-foreground: 260 50% 90%;
+
+    --accent: 185 100% 50%;
+    --accent-foreground: 220 20% 6%;
+
+    --border: 220 20% 15%;
+    --input: 220 20% 15%;
+    --ring: 174 75% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .transform-style-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+}
