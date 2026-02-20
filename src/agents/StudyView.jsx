@@ -7,11 +7,11 @@ import {
     ChevronLeft, ChevronRight, BookOpen, Link, Send, Loader2,
     RotateCcw, RefreshCw, Search, Filter, Play,
     CheckCircle2, Circle, ArrowRight, LayoutGrid, Plus,
-    Trash2, X, Sparkles, Database, EyeOff, Zap
+    Trash2, X, Sparkles, Database, EyeOff, Zap, LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export const StudyView = () => {
+export const StudyView = ({ onLogout }) => {
     const [vocab, setVocab] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -184,6 +184,15 @@ export const StudyView = () => {
                         >
                             <EyeOff size={20} className="group-hover:rotate-12 transition-transform" />
                         </button>
+                        {onLogout && (
+                            <button
+                                onClick={onLogout}
+                                className="p-4 bg-white dark:bg-slate-900 rounded-[1.5rem] text-slate-400 hover:text-accent transition-all shadow-sm border border-slate-100 dark:border-slate-800"
+                                title="Neural Disconnect"
+                            >
+                                <LogOut size={20} />
+                            </button>
+                        )}
                         <button
                             onClick={startStudySession}
                             disabled={vocab.length === 0}
