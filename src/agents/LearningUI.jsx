@@ -15,6 +15,7 @@ const YouGlishPlayer = ({ word }) => {
     const widgetRef = React.useRef(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showIframeFallback, setShowIframeFallback] = useState(false);
     const widgetId = "yg-widget-" + Math.random().toString(36).substr(2, 9);
 
     const openSearch = () => {
@@ -26,11 +27,15 @@ const YouGlishPlayer = ({ word }) => {
         let checkTimer;
         let timeoutTimer;
 
+        // Reset state when word changes
+        setIsLoading(true);
+        setError(null);
+        setShowIframeFallback(false);
+
         const initWidget = () => {
             if (!isMounted || !window.YG || !window.YG.Widget || !rootRef.current) return;
 
             try {
-                // Completely isolate the widget container from React
                 const container = document.createElement('div');
                 container.id = widgetId;
                 container.style.width = '100%';
@@ -40,19 +45,26 @@ const YouGlishPlayer = ({ word }) => {
 
                 widgetRef.current = new window.YG.Widget(widgetId, {
                     width: "100%",
-                    components: 84,
+                    components: 84, // caption + video + search
+                    partner: "lexipath_2026", // Added partner identifier
                     events: {
                         'onFetchDone': (e) => {
                             if (!isMounted) return;
                             setIsLoading(false);
-                            if (e && e.total_results === 0) setError('No clips found');
-                            else setError(null);
+                            if (e && e.total_results === 0) {
+                                setError('No clips found');
+                                // If no results in widget, maybe try iframe? No, iframe will show same.
+                                // But if it's a restriction issue, FetchDone might not even fire.
+                            } else {
+                                setError(null);
+                            }
                         },
                         'onError': (e) => {
                             if (!isMounted) return;
-                            setIsLoading(false);
-                            setError('Service Restricted on Localhost');
                             console.warn("YouGlish API Error:", e);
+                            // Error code 3 or 403 status often means restriction
+                            setIsLoading(false);
+                            setShowIframeFallback(true);
                         }
                     }
                 });
@@ -64,19 +76,21 @@ const YouGlishPlayer = ({ word }) => {
                 console.error("YouGlish Integration Crash:", err);
                 if (isMounted) {
                     setIsLoading(false);
-                    setError('Service Connection Failed');
+                    setShowIframeFallback(true);
                 }
             }
         };
 
-        // If on localhost, the widget will likely fail anyway, so set a shorter timeout
         const isLocal = window.location.hostname === 'localhost';
+
+        // Production timeout is longer to allow for CDN and restriction detection
         timeoutTimer = setTimeout(() => {
-            if (isMounted && isLoading) {
+            if (isMounted && isLoading && !showIframeFallback) {
+                console.log("YouGlish Timeout - Triggering Iframe Fallback");
                 setIsLoading(false);
-                setError(isLocal ? 'Restricted on Localhost' : 'Connection Timeout');
+                setShowIframeFallback(true);
             }
-        }, isLocal ? 6000 : 10000);
+        }, isLocal ? 5000 : 12000);
 
         checkTimer = setInterval(() => {
             if (window.YG && window.YG.Widget && rootRef.current) {
@@ -93,11 +107,10 @@ const YouGlishPlayer = ({ word }) => {
         };
     }, [word]);
 
-    // Render nothing if word is missing
     if (!word) return null;
 
     return (
-        <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-black/40 z-10 min-h-[400px] flex items-center justify-center group/player shadow-2xl">
+        <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-black/40 z-10 min-h-[450px] flex items-center justify-center group/player shadow-2xl">
             {/* Background Branding */}
             <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
                 <Video size={200} />
@@ -110,42 +123,49 @@ const YouGlishPlayer = ({ word }) => {
                         <div className="absolute inset-0 blur-xl bg-primary/20 animate-pulse"></div>
                     </div>
                     <div className="flex flex-col items-center gap-1">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/80">Global Context Agent</span>
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Fetching cinematic archives...</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/80">Neural Context Sync</span>
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Streaming cinematic data...</span>
                     </div>
                 </div>
             )}
 
-            {error && (
+            {error && !showIframeFallback && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-8 bg-slate-900 z-30 p-12 text-center animate-in zoom-in-95 fade-in duration-500">
-                    <div className="space-y-4">
-                        <div className="w-20 h-20 mx-auto rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                            <Video size={36} className="text-slate-500" />
-                        </div>
-                        <div className="space-y-2">
-                            <h5 className="text-white font-black uppercase text-xs tracking-widest">{error}</h5>
-                            <p className="text-slate-500 text-[10px] font-medium leading-relaxed max-w-[240px] mx-auto">
-                                YouGlish restricted direct playback for this environment. Click below to watch the clips directly on their site.
-                            </p>
-                        </div>
+                    <div className="w-20 h-20 mx-auto rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                        <Video size={36} className="text-slate-500" />
                     </div>
-
+                    <h5 className="text-white font-black uppercase text-xs tracking-widest">{error}</h5>
                     <button
                         onClick={openSearch}
                         className="group flex items-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/30"
                     >
-                        <PlayCircle size={18} className="text-white" />
-                        Open YouGlish Clips
+                        <PlayCircle size={18} /> Open YouGlish
                     </button>
                 </div>
             )}
 
-            {/* Stable Iframe Container (Managed outside React rendering for safety) */}
+            {showIframeFallback && (
+                <div className="absolute inset-0 z-20 animate-in fade-in zoom-in-95 duration-1000">
+                    <iframe
+                        title="YouGlish Fallback"
+                        src={`https://youglish.com/embed/${encodeURIComponent(word)}?english=1&narrow=1&ss=1&v=1`}
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        allow="autoplay; encrypted-media"
+                        allowFullScreen
+                        className="w-full h-full rounded-[2rem]"
+                        onLoad={() => setIsLoading(false)}
+                    ></iframe>
+                </div>
+            )}
+
+            {/* JS Widget Container */}
             <div
                 ref={rootRef}
                 className={cn(
-                    "w-full h-full min-h-[400px] transition-all duration-1000",
-                    (isLoading || error) ? "opacity-0 blur-xl scale-95 invisible" : "opacity-100 blur-0 scale-100"
+                    "w-full h-full min-h-[450px] transition-all duration-1000",
+                    (isLoading || error || showIframeFallback) ? "opacity-0 blur-xl scale-95 invisible" : "opacity-100 blur-0 scale-100"
                 )}
             ></div>
         </div>
