@@ -148,7 +148,7 @@ const YouGlishPlayer = ({ word }) => {
                 <div className="absolute inset-0 z-20 animate-in fade-in zoom-in-95 duration-1000">
                     <iframe
                         title="YouGlish Fallback"
-                        src={`https://youglish.com/embed/${encodeURIComponent(word)}?english=1&narrow=1&ss=1&v=1`}
+                        src={`https://youglish.com/pronounce/${encodeURIComponent(word)}/english/all/emb=1`}
                         width="100%"
                         height="100%"
                         frameBorder="0"
