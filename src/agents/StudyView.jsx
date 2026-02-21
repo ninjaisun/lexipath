@@ -10,8 +10,10 @@ import {
     Trash2, X, Sparkles, Database, EyeOff, Zap, LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { LocalizationAgent } from './LocalizationAgent';
 
-export const StudyView = ({ onLogout }) => {
+export const StudyView = ({ onLogout, lang = 'zh' }) => {
+    const t = LocalizationAgent.t(lang);
     const [vocab, setVocab] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -168,12 +170,12 @@ export const StudyView = ({ onLogout }) => {
                                 <Database size={28} />
                             </div>
                             <h1 className="text-5xl font-black text-slate-900 dark:text-white tracking-tighter kinetic-text uppercase italic">
-                                Lexicon <span className="italic-definition font-serif lowercase font-medium text-3xl tracking-normal text-primary">vault</span>
+                                {t('study.vault_lexicon')} <span className="italic-definition font-serif lowercase font-medium text-3xl tracking-normal text-primary">{t('study.vault_tag')}</span>
                             </h1>
                         </div>
                         <p className="text-slate-400 font-bold flex items-center gap-3 tracking-widest uppercase text-[10px]">
                             <span className="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
-                            {vocab.filter(v => v.status === 'mastered').length} units mastered
+                            {t('study.mastered_count', { count: vocab.filter(v => v.status === 'mastered').length })}
                         </p>
                     </div>
 
@@ -198,7 +200,7 @@ export const StudyView = ({ onLogout }) => {
                             disabled={vocab.length === 0}
                             className="px-10 py-5 bg-primary text-white rounded-[2rem] font-black uppercase tracking-[0.2em] text-[11px] shadow-tactile animate-squishy hover:rotate-1 active:scale-95 transition-all flex items-center gap-3 disabled:opacity-50"
                         >
-                            <Zap size={18} fill="currentColor" /> Ignite Session
+                            <Zap size={18} fill="currentColor" /> {t('study.ignite')}
                         </button>
                     </div>
                 </div>
@@ -227,11 +229,11 @@ export const StudyView = ({ onLogout }) => {
                         <div className="w-24 h-24 bg-primary/5 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8">
                             <BookOpen size={48} className="text-primary/20" />
                         </div>
-                        <h2 className="text-2xl font-black text-slate-400 mb-2">Lexicon Vault Empty</h2>
-                        <p className="text-slate-300 font-medium max-w-sm mx-auto mb-8 tracking-wide">Initialize your neural database by syncing from the network or adding units manually.</p>
+                        <h2 className="text-2xl font-black text-slate-400 mb-2">{t('study.empty_vault')}</h2>
+                        <p className="text-slate-300 font-medium max-w-sm mx-auto mb-8 tracking-wide">{t('study.empty_desc')}</p>
                         <div className="flex justify-center gap-4">
                             <input type="file" id="empty-file" className="hidden" onChange={(e) => handleImportData(e.target.files[0])} />
-                            <label htmlFor="empty-file" className="px-8 py-4 bg-primary text-white rounded-[2rem] font-bold cursor-pointer hover:scale-105 active:scale-95 transition-all shadow-tactile text-xs uppercase tracking-widest">Local Import</label>
+                            <label htmlFor="empty-file" className="px-8 py-4 bg-primary text-white rounded-[2rem] font-bold cursor-pointer hover:scale-105 active:scale-95 transition-all shadow-tactile text-xs uppercase tracking-widest">{t('study.local_import')}</label>
                         </div>
                     </div>
                 ) : (
@@ -269,7 +271,7 @@ export const StudyView = ({ onLogout }) => {
                                         "text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full",
                                         item.status === 'mastered' ? "bg-primary/5 text-primary border border-primary/10" : "bg-accent/5 text-accent border border-accent/10"
                                     )}>
-                                        {item.status === 'mastered' ? 'Mastered' : 'Acquiring'}
+                                        {item.status === 'mastered' ? t('action.mastery_achieved') : t('action.new_discovery')}
                                     </span>
                                     <div className="text-slate-900 dark:text-slate-200 font-bold text-base tracking-tight">{item.meaning_cn}</div>
                                 </div>
@@ -293,7 +295,7 @@ export const StudyView = ({ onLogout }) => {
                     }}
                     className="flex items-center gap-3 text-slate-400 hover:text-white font-black uppercase tracking-widest text-xs transition-all"
                 >
-                    <X size={24} /> Close Session
+                    <X size={24} /> {t('study.close_session')}
                 </button>
                 <div className="flex flex-col items-end">
                     <div className="flex items-center gap-4 mb-2">
@@ -318,6 +320,7 @@ export const StudyView = ({ onLogout }) => {
                                 item={sessionVocab[currentIndex]}
                                 onStatusChange={handleStatusChange}
                                 onWordUpdate={handleWordUpdate}
+                                lang={lang}
                             />
                         </div>
 
@@ -374,13 +377,13 @@ export const StudyView = ({ onLogout }) => {
                         <div className="w-32 h-32 bg-green-500/10 text-green-500 rounded-[3rem] flex items-center justify-center mx-auto mb-10 shadow-inner">
                             <CheckCircle2 size={64} strokeWidth={1.5} />
                         </div>
-                        <h2 className="text-4xl font-black text-white mb-6 uppercase tracking-tighter">Peak Mastery</h2>
-                        <p className="text-slate-400 mb-12 font-medium leading-relaxed">Your neural connections for these {sessionVocab.length} words have been reinforced. Return to Lexicon for the next challenge.</p>
+                        <h2 className="text-4xl font-black text-white mb-6 uppercase tracking-tighter">{t('study.mastery_achieved')}</h2>
+                        <p className="text-slate-400 mb-12 font-medium leading-relaxed">{t('study.mastery_desc', { count: sessionVocab.length })}</p>
                         <button
                             onClick={() => setViewMode('lexicon')}
                             className="w-full py-6 bg-primary text-white rounded-3xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-3xl shadow-primary/40 hover:scale-105 transition-all"
                         >
-                            Complete Session <ArrowRight size={20} />
+                            {t('study.return_lexicon')} <ArrowRight size={20} />
                         </button>
                     </div>
                 )}
@@ -399,6 +402,7 @@ export const StudyView = ({ onLogout }) => {
                     setSelectedWord(prev => ({ ...prev, status }));
                 }}
                 onWordUpdate={handleWordUpdate}
+                lang={lang}
             />
         </div>
     );

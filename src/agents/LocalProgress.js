@@ -85,5 +85,31 @@ export const LocalProgress = {
             ...item,
             status: progress[item.id] || item.status || 'unmastered'
         }));
+    },
+
+    deleteWord(wordId) {
+        const vocab = this.loadVocabulary() || [];
+        const filtered = vocab.filter(item => item.id !== wordId);
+        localStorage.setItem(VOCAB_KEY, JSON.stringify(filtered));
+
+        const progress = this.loadProgress();
+        delete progress[wordId];
+        this.saveProgress(progress);
+    },
+
+    deleteMultiple(wordIds) {
+        if (!Array.isArray(wordIds)) return;
+        const vocab = this.loadVocabulary() || [];
+        const filtered = vocab.filter(item => !wordIds.includes(item.id));
+        localStorage.setItem(VOCAB_KEY, JSON.stringify(filtered));
+
+        const progress = this.loadProgress();
+        wordIds.forEach(id => delete progress[id]);
+        this.saveProgress(progress);
+    },
+
+    clearVocab() {
+        localStorage.removeItem(VOCAB_KEY);
+        localStorage.removeItem(STORAGE_KEY);
     }
 };
